@@ -43,8 +43,8 @@ LiquidCrystal_I2C lcd(0x3f, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I
 int measuredTemperatures[3] = {0,0,0}; // measured temperatures (we have 3 sensors...)
 int measuredHumidity[3] = {0,0,0}; // measured humidities (we have 3 sensors, these are stored to streamline log)
 int relayPins[2] = {RELAY1_PIN, RELAY2_PIN}; // The relay pins
-int relayOnTemp[2] = {16,16}; // Temperature in celcius to turn on relay
-int relayOffTemp[2] = {21,21};  // Temperature in celcius to turn off relay
+int relayOnTemp[2] = {7,7}; // Temperature in celcius to turn on relay
+int relayOffTemp[2] = {11,11};  // Temperature in celcius to turn off relay
 int relayState[2] = {LOW,LOW}; // Initial relay state
 
 /*-----( Declare Variables )-----*/
