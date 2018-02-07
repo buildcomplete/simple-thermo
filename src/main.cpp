@@ -31,7 +31,7 @@ terry@yourduino.com */
 // Adafruit SD shields and modules: pin 10
 // Sparkfun SD shield: pin 8
 const int chipSelect = 10;
-const int logDelay = 10; // Log every 'logDelay' cycle
+const int logDelay = 20; // Log every 'logDelay' cycle
 
 /*-----( Declare objects )-----*/
 // set the LCD address to 0x27 for a 20 chars 4 line display
@@ -56,8 +56,6 @@ DHT dht3(DHTPIN3, DHTTYPE);
 File dataFile;
 int  logDelayCounter = 0;
 
-void toggleBacklight();
-
 void setup()   /*----( SETUP: RUNS ONCE )----*/
 {
 	pinMode(BUTTON, INPUT);
@@ -67,7 +65,6 @@ void setup()   /*----( SETUP: RUNS ONCE )----*/
 		digitalWrite(relayPins[i], relayState[i]);
 	}
 	pinMode(STATUS_PIN, OUTPUT);
-	attachInterrupt(digitalPinToInterrupt(BUTTON), toggleBacklight, RISING);
 	Serial.begin(9600);  // Used to type in characters
 	dht1.begin();
 	dht2.begin();
@@ -138,37 +135,29 @@ void setup()   /*----( SETUP: RUNS ONCE )----*/
 
 }/*--(end setup )---*/
 
-volatile int backlightTime = 2;
-void toggleBacklight()
-{
-	backlightTime = 15;
-}
-
 bool status = false;
+char indicator[] = {'.', ' '};
+int indicatorIdx = 0;
+
+
 void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 {
 	// Make a output blink to show that the loop is processing.
 	digitalWrite(STATUS_PIN, status);
 	status = !status;
 
-	// Turn on or off the lcd backlight
-	if (backlightTime > 0)
-	{
-		lcd.backlight( );
-		backlightTime--;
-	}
-	else if (backlightTime == 0)
-	{
-			lcd.noBacklight( );
-			backlightTime--;
-	}
+	lcd.backlight( );
 	
 	// Wait a few seconds between measurements.
 	delay(1000);
 	DHT sensors[3] = {dht1, dht2, dht3};
 	  
 	lcd.setCursor(0,0);
-	lcd.write("   s1  s2  s3");
+	lcd.write(indicator[indicatorIdx]);
+	++indicatorIdx;
+	indicatorIdx = indicatorIdx % 2;
+	
+	lcd.write("  s1  s2  s3");
 	lcd.setCursor(0,1);
 	lcd.write("T");
 	lcd.setCursor(0,2);
@@ -192,7 +181,13 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 		// Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
 		
 		lcd.setCursor(colIndexMeasurement[sensorId], 1);
+		
 		float t = dht.readTemperature();
+		
+		// clear 'NAN'
+		lcd.write("   ");
+		lcd.setCursor(colIndexMeasurement[sensorId], 1);
+		
 		if ( ! isnan(t))
 		{
 			lcd.print((int)t);
@@ -204,7 +199,12 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 		}
 
 		lcd.setCursor(colIndexMeasurement[sensorId], 2);
+		
 		float h = dht.readHumidity();
+		
+		// clear 'NAN'
+		lcd.write("   ");
+		lcd.setCursor(colIndexMeasurement[sensorId], 2);
 		if ( ! isnan(h))
 		{
 			lcd.print((int)h);
