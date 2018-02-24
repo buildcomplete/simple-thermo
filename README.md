@@ -11,16 +11,7 @@ The code is based in the example code from the dependencies
 platformio http://platformio.org
 
 ## Platformio Dependencies
-* [ 19  ] Adafruit-DHT https://github.com/adafruit/DHT-sensor-library
+* [ 31 ] #Adafruit Unified Sensor
+* [ 19 ] #DHT sensor library
 * [ 161 ] SD https://github.com/adafruit/SD
-These dependecies are fetched using platformio lib install [id]
-
-```
-platformio lib install 19
-platformio lib install 161
-```
-
-
-## Other dependencies
-I downloaded and unziped the library (already included in this git)
-* https://bitbucket.org/fmalpartida/new-liquidcrystal/downloads/
+* [ 576 ] #LiquidCrystal_I2C

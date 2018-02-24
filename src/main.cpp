@@ -1,16 +1,6 @@
-/* YourDuino.com Example Software Sketch
-20 character 4 line I2C Display
-Backpack Interface labelled "YwRobot Arduino LCM1602 IIC V1"
-Connect Vcc and Ground, SDA to A4, SCL to A5 on Arduino
-terry@yourduino.com */
-
 /*-----( Import needed libraries )-----*/
-#include <Wire.h>  // Comes with Arduino IDE
-// Get the LCD I2C Library here: 
-// https://bitbucket.org/fmalpartida/new-liquidcrystal/downloads
-// Move any other LCD libraries to another folder or delete them
-// See Library "Docs" folder for possible commands etc.
-#include "LiquidCrystal_I2C.h"
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 #include "DHT.h"
 
 #include <SPI.h>
@@ -33,11 +23,7 @@ terry@yourduino.com */
 const int chipSelect = 10;
 const int logDelay = 20; // Log every 'logDelay' cycle
 
-/*-----( Declare objects )-----*/
-// set the LCD address to 0x27 for a 20 chars 4 line display
-// Set the pins on the I2C chip used for LCD connections:
-//                    addr, en,rw,rs,d4,d5,d6,d7,bl,blpol
-LiquidCrystal_I2C lcd(0x3f, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
+LiquidCrystal_I2C lcd(0x3f, 20, 4);  // Set the LCD I2C address
 
 // Variables for controlling the relay with hysteresis.
 int measuredTemperatures[3] = {0,0,0}; // measured temperatures (we have 3 sensors...)
@@ -70,6 +56,7 @@ void setup()   /*----( SETUP: RUNS ONCE )----*/
 	dht2.begin();
 	dht3.begin();
 
+	lcd.init();
 	lcd.begin(20,4);         // initialize the lcd for 20 chars 4 lines, turn on backlight
 	lcd.backlight();
 	
@@ -85,36 +72,36 @@ void setup()   /*----( SETUP: RUNS ONCE )----*/
 	while (!card.init(SPI_HALF_SPEED, chipSelect)) {
 		lcd.clear();
 		lcd.setCursor(0,0);
-		lcd.write("SD-init failed. check:");
+		lcd.printstr("SD-init failed. check:");
 		lcd.setCursor(0,1);
-		lcd.write("*card inserted?");
+		lcd.printstr("*card inserted?");
 		lcd.setCursor(0,2);
-		lcd.write("*wiring correct?");
+		lcd.printstr("*wiring correct?");
 		lcd.setCursor(0,3);
-		lcd.write("*chipSel correct?");
+		lcd.printstr("*chipSel correct?");
 	} 
 	
 	lcd.clear();
 	lcd.setCursor(0,0);
 	// print the type of card
-	lcd.write("Card type: ");
+	lcd.printstr("Card type: ");
 	switch(card.type()) {
 		case SD_CARD_TYPE_SD1:
-			lcd.write("SD1");
+			lcd.printstr("SD1");
 			break;
 		case SD_CARD_TYPE_SD2:
-			lcd.write("SD2");
+			lcd.printstr("SD2");
 			break;
 		case SD_CARD_TYPE_SDHC:
-			lcd.write("SDHC");
+			lcd.printstr("SDHC");
 			break;
 		default:
-			lcd.write("Unknown");
+			lcd.printstr("Unknown");
 	}
 	delay(1000);
 
 	if (!SD.begin(chipSelect)) {
-		lcd.write("Card failed, or not present");
+		lcd.printstr("Card failed, or not present");
 		// don't do anything more:
 		while (1)
 			delay(1000);
@@ -124,7 +111,7 @@ void setup()   /*----( SETUP: RUNS ONCE )----*/
 	// Open up the file we're going to log to!
 	dataFile = SD.open("datalog.tsv", FILE_WRITE);
 	if (! dataFile) {
-		lcd.write("error opening datalog.txt");
+		lcd.printstr("error opening datalog.txt");
 		// Wait forever since we cant write data
 		while (1) 
 			delay(1000);
@@ -157,11 +144,11 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 	++indicatorIdx;
 	indicatorIdx = indicatorIdx % 2;
 	
-	lcd.write("  s1  s2  s3");
+	lcd.printstr("  s1  s2  s3");
 	lcd.setCursor(0,1);
-	lcd.write("T");
+	lcd.printstr("T");
 	lcd.setCursor(0,2);
-	lcd.write("H");
+	lcd.printstr("H");
 	lcd.setCursor(0,3);
 	lcd.print("Releay");
 	for (int i=0;i<2;++i)
@@ -185,7 +172,7 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 		float t = dht.readTemperature();
 		
 		// clear 'NAN'
-		lcd.write("   ");
+		lcd.printstr("   ");
 		lcd.setCursor(colIndexMeasurement[sensorId], 1);
 		
 		if ( ! isnan(t))
@@ -195,7 +182,7 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 		}
 		else
 		{
-			lcd.write("NAN");
+			lcd.printstr("NAN");
 		}
 
 		lcd.setCursor(colIndexMeasurement[sensorId], 2);
@@ -203,7 +190,7 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 		float h = dht.readHumidity();
 		
 		// clear 'NAN'
-		lcd.write("   ");
+		lcd.printstr("   ");
 		lcd.setCursor(colIndexMeasurement[sensorId], 2);
 		if ( ! isnan(h))
 		{
@@ -212,7 +199,7 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 		}
 		else
 		{
-			lcd.write("NAN");
+			lcd.printstr("NAN");
 		}
 	}
 	
@@ -238,7 +225,7 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 	if (logDelayCounter == 0)
 	{
 		lcd.setCursor(19,0);
-		lcd.write("+");
+		lcd.printstr("+");
 		
 		// Write to log file
 		for (int sensorId=0;sensorId<3;++sensorId)
@@ -265,7 +252,7 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 	else if (logDelayCounter == logDelay)
 	{
 		lcd.setCursor(19,0);
-		lcd.write(" ");
+		lcd.printstr(" ");
 	}
 	--logDelayCounter;
   
